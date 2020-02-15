@@ -25,7 +25,7 @@ def _is_recipe(title: str) -> bool:
 def _remove_brackets(match) -> str:
     return match.group(2).split("|")[0]
 
-def _clean_string(text: str):
+def _clean_string(text: str, no_equal_split=False):
     text = "".join(text.split("\n\n")[1:-1])
     text = re.sub(r"(\[\[)([\w, \s]+\|*[\w, \s]*)(\]\])",
                   _remove_brackets,
@@ -35,9 +35,11 @@ def _clean_string(text: str):
     text = text.replace(";",
                         "").replace("&amp",
                                     "").replace("nbsp",
-                                                "").replace("=",
-                                                            "")
-    text = text.replace("Directions", "").replace("Ingredients", "")
+                                                "")
+
+    if not no_equal_split:
+        text = text.replace("Directions", "").replace("Ingredients",
+                                                      "").replace("=", "")
 
     return text
 
@@ -53,36 +55,44 @@ def prepare(data_source: str,
         ingredients = []
         methods = []
         recipes_raw = soup.find_all("text")
-        for index, title in tqdm(enumerate(soup.find_all("title")),
-                                 desc="Reading soup"):
+        for index, title in enumerate(tqdm(soup.find_all("title"),
+                                 desc="Reading soup")):
             title = str(title)[7:-8]
             if _is_recipe(title):
                 temp_ing = []
                 temp_met = []
                 titles.append(title)
+                method_appended = False
                 recipe = _clean_string(str(recipes_raw[index]))
-                for line in tqdm(iter(recipe.splitlines())):
+                for line in iter(recipe.splitlines()):
+                            
                     if line.startswith("*"):
                         temp_ing.append(line[1:])
                     if line.startswith("#"):
                         temp_met.append(line[1:])
+                        method_appended = True
+
                 ingredients.append("\n".join(temp_ing))
+                if not method_appended:
+                    temp_met = [_clean_string(recipe.split("==")[-1],
+                                              no_equal_split=True)]
                 methods.append("\n".join(temp_met))
 
-        for index, title in tqdm(enumerate(titles), desc="Writing out"):
+        for index, title in enumerate(tqdm(titles, desc="Writing out")):
             with open(outfile, 'a') as out:
-                out.write("<recipe>\n")
+                if titles[index] != "" and ingredients[index] != "" and methods[index] != "":
+                    out.write("<recipe>\n")
 
-                out.write("<title>")
-                out.write(titles[index])
-                out.write("</title>\n")
-                
-                out.write("<ingredients>")
-                out.write(ingredients[index])
-                out.write("</ingredients>\n")
+                    out.write("<title>")
+                    out.write(titles[index])
+                    out.write("</title>\n")
+                    
+                    out.write("<ingredients>")
+                    out.write(ingredients[index])
+                    out.write("</ingredients>\n")
 
-                out.write("<method>")
-                out.write(methods[index])
-                out.write("</method>\n")
+                    out.write("<method>")
+                    out.write(methods[index])
+                    out.write("</method>\n")
 
-                out.write("</recipe>")
+                    out.write("</recipe>")
