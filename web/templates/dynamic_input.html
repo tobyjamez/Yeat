@@ -1,0 +1,31 @@
+{% extends "layout2.html" %}
+{% block content %}
+<script>
+  function add_field()
+  {
+    var total_text=document.getElementsByClassName("input_text");
+    total_text=total_text.length+1;
+    field_div = document.getElementById("field_div");
+    new_input = "<li id='input_text"+total_text+"_wrapper'><input type='text' class='input_text' name='input_text[]' id='input_text"+
+    total_text+"' placeholder='Enter Text'></li>";
+    field_div.insertAdjacentHTML('beforeend',new_input);
+  }
+  function remove_field()
+  {
+    var total_text=document.getElementsByClassName("input_text");
+    document.getElementById("input_text"+total_text.length+"_wrapper").remove();
+  }
+</script>
+
+  <form action='/results' method="post">
+    <div id="wrapper">
+      <input type="button" value="Add Ingredient" onclick="add_field();">
+      <input type="button" value="Remove Ingredient" onclick="remove_field();">
+      <ol id="field_div">
+
+      </ol>
+    </div>
+    <input type='submit' value='Select'>
+  </form>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "layout2.html" %}
+{% block content %}
+<ul>
+    <h5> Ingredients:</h5>
+{% for value in values %}
+    <p>{{value}}</p>
+{% endfor %}
+    <h5> Method: </h5>
+</ul>
+
+{% endblock %}
