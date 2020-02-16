@@ -96,3 +96,16 @@ def prepare(data_source: str,
                     out.write("</method>\n")
 
                     out.write("</recipe>")
+
+
+def xml_to_csv(path: str,
+               outpath: str) -> None:
+    with open(path) as input_file:
+        with open(outpath, 'a') as output_file:
+            soup = BeautifulSoup(input_file.read())
+            for title in soup.find_all("title"):
+                output_file.write("title," + str(title).replace("\n", ".").replace(".,",".").replace(" .", ". ").replace("  ", " ")[7:-8] + "\n")
+            for ingredients in soup.find_all("ingredients"):
+                output_file.write("ingredients," + str(ingredients).replace("\n", ".").replace("..",".").replace(" .", ". ").replace("  ", " ")[13:-14] + "\n")
+            for method in soup.find_all("method"):
+                output_file.write("method," + str(method).replace("\n", ".").replace("..",".").replace(" .", ". ").replace("  ", " ")[8:-9] + "\n")
